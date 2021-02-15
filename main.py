@@ -6,11 +6,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-# Logging if in dev mode
-if len(sys.argv) > 1 and sys.argv[1] == 'dev':
-    import logging
-    logging.basicConfig(level=logging.INFO)
-
 class WeatherBot(commands.Bot):
     async def on_ready(self):
         await self.change_presence(status=discord.Status.online, activity=discord.Game('cloud watching ($help)'))
@@ -37,8 +32,8 @@ async def cweather(ctx, location, units='imperial'):
     """Gets current weather (wrap double quotes around location if the location has spaces in it)"""
     data = get_weather(location, units)
     await ctx.send(
-        'Current weather is `{0}` with a temp of {1}. It feels like {2}.'
-        .format(data['current']['weather'][0]['description'], data['current']['temp'], data['current']['feels_like'])
+        'Current weather is `{0}` with a temp of {1}. It feels like {2}. Units: {3}'
+        .format(data['current']['weather'][0]['description'], data['current']['temp'], data['current']['feels_like'], units)
     )
 
 @wb.command()
@@ -53,8 +48,14 @@ async def dweather(ctx, location, units='imperial'):
         temp_low.append(i['temp']['min']) 
         weather.append(i['weather'][0]['description'])
     await ctx.send(
-        'Over the next 8 days the weather is {0}. The high for each day is {1} and the low for each day is {2}.'
-        .format(', '.join(weather), ', '.join(map(str, temp_high)), ', '.join(map(str, temp_low)))
+        'Over the next 8 days the weather is {0}. The high for each day is {1} and the low for each day is {2}. Units: {3}'
+        .format(', '.join(weather), ', '.join(map(str, temp_high)), ', '.join(map(str, temp_low)), units)
     )
 
-wb.run(os.getenv('TOKEN'))
+# Logging if in dev mode
+if len(sys.argv) > 1 and sys.argv[1] == 'dev':
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    wb.run(os.getenv('DEV_TOKEN'))
+else:
+    wb.run(os.getenv('TOKEN'))
